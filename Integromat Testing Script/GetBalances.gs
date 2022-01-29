@@ -6,7 +6,7 @@
  * Put the latest data inot the balances sheet
 */
 
-/** Convensions
+/** Conventions
  *  _arguments
  *  aArrays for arrays
  */
@@ -18,9 +18,10 @@
  *    B]1) creat an array of all the contracts on Polygon Contracts sheet
  *    B]2) filter that array into an array with just the good contracts.
  * C] create array of all the downloaded contracts that have been confirmed: confirmed_contracts
- *    C]1) compare source contracts to polygon contracts
- *    C]2) create the new array of good contracts
  * D] starting with confirmed_contracts, go through latest download sheet and create array of balances: final_balances
+ *    D]1) get array of all the downloaded info, including prices: full_download
+ *    D]2) get an array of good contracts and thier data: good_contract_data
+ *    D]3) filter good_contracts_data array into just contracts and their pricdes: good_contract_data
  * E] put final_balances into "Balance Tracking sheet"
  * F] fController() - controler function - called by main - runs the funcitons in order
  * G] runMain() -  main fuction
@@ -60,14 +61,12 @@
     let targetLastRow = targetSheet.getLastRow();
     
     /** A] create array of all the conracts from the latest data pull: latest_contracts */
-    aLatest_Contracts = createArrayFromColumn(sourceSheet, sourceLastRow, sourceColumn, sourceStartRow, sourceColumnsRange)
-    console.log(aLatest_Contracts);
+    const aLatest_Contracts = createArrayFromColumn(sourceSheet, sourceLastRow, sourceColumn, sourceStartRow, sourceColumnsRange)
  
     /** B]1) creat an array of all the contracts on Polygon Contracts sheet */
-    aPolygonContracts = createArrayFromColumn(contractsSheet, contractsLastRow, contractsColumn, contractsStartRow, contractsColumnsRange)
-    // console.log(aPolygonContracts);
+    const aPolygonContracts = createArrayFromColumn(contractsSheet, contractsLastRow, contractsColumn, contractsStartRow, contractsColumnsRange)
 
-    /** B]2) filter that array into an array with just the good contracts. 
+    /** B]2) filter array will all the contracts into an array with just the good_contracts. 
      *    SO answer here https://stackoverflow.com/questions/70899195/how-to-get-the-first-item-in-nested-filtered-array-in-javascirpt/70899368#70899368
      *    aPolygonContracts has this as an output example:
      *    [[ '0x8ae127d224094cb1b27e1b28a472e588cbcc7620', 0 ],
@@ -75,32 +74,56 @@
           [ '0x03cd191f589d12b0582a99808cf19851e468e6b5', 0 ],
           [ '0x0b3f868e0be5597d5db7feb59e1cadbb0fdda50a', 1 ]]
           need to filter for contracts with for second item (1 or 0),
-          then map each sub array to get just the first elememtn
-    */
-    const aGoodContracts = aPolygonContracts.filter(contracts => contracts[1]===1).map(c => c[0]);  // returns an array of just the good contracts
-    console.log(aGoodContracts)
+          then map each sub array to get just the first elememtn */
+    const aGood_Contracts = aPolygonContracts.filter(contracts => contracts[1]===1).map(c => c[0]);  // returns an array of just the good contracts
 
+    /** C] create array of all the downloaded contracts that have been confirmed: confirmed_contracts */
+    /** filters one array with another
+     *  returns an array of contracts that are ready to have their balances recorded in the balances sheet */
+    /** SO answer here: https://stackoverflow.com/questions/30389599/comparing-and-filtering-two-arrays */
+    const aConfirmed_Contracts = aGood_Contracts.filter(function(e) {
+        return aLatest_Contracts.indexOf(e) >-1;
+    });
 
-    /** C]1) compare source contracts to polygon contracts */
+    /** D]1) get array of all the downloaded info, including prices: full_download */
+    const aFull_Download = createArrayFromColumn(sourceSheet, sourceLastRow, 2, 2, 4);
+
+    /** D]2) get an array of good contracts and thier data: good_contract_data */
+    /** filters the full_download array using the confirmed_contracts array */
+    var aGood_Contract_Data = aFull_Download.filter(c => aConfirmed_Contracts.includes(c[0]));
+    
+    /** D]3) filter good_contracts_data array into just contracts and their pricdes: good_contract_data */
+    for (var i = aGood_Contract_Data.length - 1; i >= 0; i--){  // cleans sub arrays to get contracts and balances
+        aGood_Contract_Data[i].splice(1,2);
+    };
+
+    console.log(aGood_Contract_Data);
+    
+    
+
+    // console.log(aFull_Download)
 
 
     console.log("end fController");
 }
 
 
-/** B] create an array of all the good contracts: good_contracts */
+
 
 
 
 /** generic get a columon of data function and return an array */
-/** _sheet = the sheet in question
- *  _lastRow = the last row of data in the sheet
- *  _columnNum = the number of the column in question
- *  _startingRow = 1 is no header, 2 is with header
+/** 
  *  .flat() colapses the array of arrays
  *  getRange(row, column, numRows, numColumns)
  */
-function createArrayFromColumn(_sheet, _lastRow, _columnNum, _startingRow, _columns){ 
+function createArrayFromColumn(
+  _sheet,         // the sheet in question
+  _lastRow,       // the last row of data in the sheet
+  _columnNum,     // the number of the column in question - the starting column if more than one
+  _startingRow,   // 1 is no header, 2 is with header
+  _columns        // numbef of colums
+  ){ 
     if (_startingRow = 2) {
         _lastRow = _lastRow -1;       // if there's a header, need to cut the range down
     };
@@ -123,10 +146,6 @@ function createArrayFromColumn(_sheet, _lastRow, _columnNum, _startingRow, _colu
  * kicks off the script
  */
 function runMain() {
-  /**  let sourceSheetName = "Raw Polygon Pull";
-    let contractsSheetName = "Polygon Contracts"
-    let targetSheetName = "Balance Tracking";
-    fController(sourceSheetName, contractsSheetName, targetSheetName) */
      fController()
 }
 
