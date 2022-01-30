@@ -23,6 +23,10 @@
  *    D]2) get an array of good contracts and thier data: good_contract_data
  *    D]3) filter good_contracts_data array into just contracts and their pricdes: good_contract_data
  * E] put final_balances into "Balance Tracking sheet"
+ *    E]1) check to see if contracts in latest pull are in the balance sheet
+ *          E]1)a) grab array of current target headers (contracts): targe_headers
+ *          E]1)b) if not there, add the needed column
+ *    E]2) once all columns are there, put the balances in the last row
  * F] fController() - controler function - called by main - runs the funcitons in order
  * G] runMain() -  main fuction
  */
@@ -30,7 +34,6 @@
 
 /** F] fController() - controler function - called by main - runs the funcitons in order */
   function fController(){
-    //console.log('Arument 1: ' + _sourceSheetName, ' Argument 2: ' + _targetSheetName)
 
     /** general variables */
     let ss = SpreadsheetApp.getActiveSpreadsheet();           // get active spredsheet
@@ -38,27 +41,29 @@
     let contractsSheetName = "Polygon Contracts"
     let targetSheetName = "Balance Tracking";
     
-    /** source sheet info */
+    /** source sheet info.  where the raw data from the api lands */
     let sourceSheet = ss.getSheetByName(sourceSheetName);    // the source of the latest balance pull
     let sourceLastRow = sourceSheet.getLastRow();     
     let sourceColumn = 2                                      // column with the contract addresses
     let sourceStartRow = 2                                    // 1 = no header, 2 = header
     let sourceColumnsRange = 1;
 
-    /** sheet with the list of contracts we care about */
-    // contractsSheet, contractsLastRow, contractsColumn, contractsStartRow
+    /** sheet with the list of contracts we care about.  Determine what token balances are tracked. */
     let contractsSheet = ss.getSheetByName(contractsSheetName);
     let contractsLastRow = contractsSheet.getLastRow();
     let contractsColumn = 1;                                  // contracts are in the first column
     let contractsStartRow = 2;
     let contractsColumnsRange = 2;                            // need two collumns: contracts and weather or not we're tracking them
 
-
-
-    /** targe sheet info */
-    let targetSheet = ss.getSheetByName(targetSheetName);    // the ultimate target sheet of the data pull
+    /** targe sheet info. where the balances are being tacked */
+    /** top row will have contract addresses */
+    let targetSheet = ss.getSheetByName(targetSheetName); 
+    let targetStartColumn = 2;                                // target contracts start in second column   
+    let targetStartRow = 1;                                   // target headers are in the first row
+    let targetHeaderRows = 1;                                    // putting in for last row for target headrs array
     let targetRange = targetSheet.getDataRange();             // get the entire range of the target sheet
     let targetLastRow = targetSheet.getLastRow();
+    let targetLastColumn = targetSheet.getLastColumn();
     
     /** A] create array of all the conracts from the latest data pull: latest_contracts */
     const aLatest_Contracts = createArrayFromColumn(sourceSheet, sourceLastRow, sourceColumn, sourceStartRow, sourceColumnsRange)
@@ -93,36 +98,54 @@
     var aGood_Contract_Data = aFull_Download.filter(c => aConfirmed_Contracts.includes(c[0]));
     
     /** D]3) filter good_contracts_data array into just contracts and their pricdes: good_contract_data */
-    for (var i = aGood_Contract_Data.length - 1; i >= 0; i--){  // cleans sub arrays to get contracts and balances
-        aGood_Contract_Data[i].splice(1,2);
+    for (var i = aGood_Contract_Data.length - 1; i >= 0; i--){  // cleans sub arrays to get just the contracts and balances
+        aGood_Contract_Data[i].splice(1,2);  // deletes the middle two of 4 items (starts at 1 and deltes 2)
     };
-
-    console.log(aGood_Contract_Data);
+    // console.log(aGood_Contract_Data);
     
-    
+    /** E]1)a) grab array of current target headers (contracts): targe_headers */
+    /** need to replace hard code arguments with variables */
+    const test_array = turnRangeIntoArray(targetSheet, 1, 2, 1, targetLastColumn)
+    console.log(test_array);
 
-    // console.log(aFull_Download)
-
+    /** 1 - get an array of the target headers
+     *  2 - get an array of the balances that is ordered exactly like the target headers
+     *  3 - put a time-stamp at the front of the balances
+     *  4 - place the array of the time-stamped balances in the last row of the balances tab
+     */
 
     console.log("end fController");
 }
 
 
-
-
-
+/** get range and turn into an array */
+// getRange(row, column, numRows, numColumns)
+function turnRangeIntoArray(
+    _sheet,
+    _startRow,
+    _startColumn,
+    _totalRows,
+    _totalColumns
+    ){
+    theRange = _sheet.getRange(_startRow, _startColumn, _totalRows - _startRow +1, _totalColumns - _startColumn + 1);
+    returnArray = theRange.getValues();
+    return returnArray;
+}
 
 /** generic get a columon of data function and return an array */
 /** 
  *  .flat() colapses the array of arrays
  *  getRange(row, column, numRows, numColumns)
  */
+
+/** NEED TO REPLACE ALL REFERENCES TO THSI WITH THE NEW GENERIC FUNCTION */
 function createArrayFromColumn(
+  /** this can be refactored into a general get arary-from-sheet function */
   _sheet,         // the sheet in question
   _lastRow,       // the last row of data in the sheet
   _columnNum,     // the number of the column in question - the starting column if more than one
   _startingRow,   // 1 is no header, 2 is with header
-  _columns        // numbef of colums
+  _columns        // number of colums
   ){ 
     if (_startingRow = 2) {
         _lastRow = _lastRow -1;       // if there's a header, need to cut the range down
