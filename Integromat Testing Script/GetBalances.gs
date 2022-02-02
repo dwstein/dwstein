@@ -223,7 +223,7 @@ function turnRangeIntoArray(
     _startRow,
     _startColumn,
     _totalRows,
-    _totalColumns       /** columns starting from column A.  If you want collumns C, D, and E start column is 3 and total collumns is 6 */
+    _totalColumns       
     ){
     theRange = _sheet.getRange(_startRow, _startColumn, _totalRows , _totalColumns);
     returnArray = theRange.getValues();
