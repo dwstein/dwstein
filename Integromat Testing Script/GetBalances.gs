@@ -1,4 +1,4 @@
-/** code for pulling in the info pologoin balances via covalent api */
+/** code for pulling in the info polygon balances via covalent api */
 
 /** working exmaple
  * api.covalenthq.com/v1/137/address/0x4d5aF4843eaCF5C5318E6913f04251b937dbF034/balances_v2/?key=ckey_22e6256ba15d4d6d8a42df77447
