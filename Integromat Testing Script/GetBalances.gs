@@ -22,7 +22,7 @@
   quote_24h: null,
   nft_data: null. */
 
-/** Assmple the API URL */
+/** Assemble the API URL */
     function apiURL (
       _baseURL,         // api.covalenthq.com
       _version,         // v1
@@ -101,9 +101,10 @@ function getRawData(_URL){
 /** place the cleanred API data inot the raw download sheet */
     function placeAPIData(_cleanredAPIData, _sheetName){
       var ss = SpreadsheetApp.getActiveSpreadsheet();
-      let sourceSheet = ss.getSheetByName(_sheetName);
+      var downloadSheet = ss.getSheetByName(_sheetName);
+      var downloadRange = downloadSheet.getRange(2,1,_cleanredAPIData.length, _cleanredAPIData[0].length)
+      downloadRange.setValues(_cleanredAPIData);
     }
-
 
 /** API Controller Funciton */
     /** runs through the other functions in the script */
@@ -121,13 +122,12 @@ function getRawData(_URL){
         "last_transferred_at"];
       var cleanedAPIData = cleanAPIData(response, aColumnHeaderList, "data", "items");
       var finalArray = addTimeStamp(cleanedAPIData);
-      placeAPIData(cleanedAPIData, "Raw Ponlygon Pull");
-      console.log("this shit is over");
-
-    }
+      placeAPIData(cleanedAPIData, "Raw Polygon Pull");
+    };
 
 /** runs Covalent_API.gs */
 function runCovalent_API(){
   apiControler()
+  console.log("runCovalent_API script over")
 }
 
