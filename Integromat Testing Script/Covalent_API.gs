@@ -70,16 +70,22 @@ function getRawData(_URL){
       _levelOne,            // first key in object
       _levelTwo){           // second key in object
       var theParsedJSONdata = JSON.parse(_rawAPIResponse)
-      // console.log(theParsedJSONdata);
-      var aContractData = theParsedJSONdata[_levelOne][_levelTwo];    // returns an array
-      /** loop aContractData and put contracts into arrays */
-   
-exit();
-      console.log(contractData);
-exit();
-      return cleanedAPIData
-    }
 
+      var aContractData = theParsedJSONdata[_levelOne][_levelTwo];    // returns an array
+   
+      /** loop aContractData and put contracts into a 2D array */
+          var aCleanData = [];
+          for  (var n = 0; n <= aContractData.length - 1; n++) {  // go thorugh all the contracts
+              var aTempSubArray = [];
+              for (var i = 0; i <= _aColumnHeaderList.length - 1; i++) {  // loop through the headers array
+                // console.log(aContractData[n][_aColumnHeaderList[i]])  // call the key to the object nested in the array
+                aTempSubArray.push(aContractData[n][_aColumnHeaderList[i]]) // add the values from the keys to the temp array
+              };
+              aCleanData.push(aTempSubArray);
+          };
+      console.log(aCleanData);
+      return aCleanData       // 2D array
+    }
 
 /** API Controller Funciton */
     /** runs through the other functions in the script */
@@ -96,7 +102,7 @@ exit();
         "contract_name",
         "last_transferred_at"];
       let cleanedAPIData = cleanAPIData(response, aColumnHeaderList, "data", "items");
-      console.log(cleanedAPIData);
+      // console.log(cleanedAPIData);
 
     }
 
@@ -105,35 +111,3 @@ function runCovalent_API(){
   apiControler()
 }
 
-// exit();
-// let rawAPIPull = function rawZapperAPIdata(walletAddress, networkName, sProtocal) {
-//             console.log("rawAPIdata from runAAVEMain")
-//             var apiKEY = "96e0cc51-a62e-42ca-acee-910ea7d2a241"; // API key from Zapper
-//             var url = "https://api.zapper.fi/v1/staked-balance/single-staking?addresses%5B%5D=" + walletAddress + "&network=" + networkName + "&api_key=" + apiKEY; // assembles the API URL with the wallet addressa, network and name
-//             console.log(url);
-//             var response = UrlFetchApp.fetch(url)
-//             return response
-//         };
-
-// function runDataPull(
-//   walletAddress,      /** the wallet adress that's the subject of the querry */
-//   networkName,        /** the blockchaing being used; i.e. polygon */
-//   sProtocal,          /** the smartcontract being used.  e.s. aave, quickswap, sushiswap...etc. */
-//   sTargetSheetName,   /** name of the taret sheet where the data pull will end up */
-//   stampRow,           /** the row for the time stamp */
-//   stampColumn,        /** the oclumn for the time stamp */
-//   sNameingKey,        /** the key in the object to rename they keys (ex. sympbol:DAI) */
-//   stampSheet,         /** name of the sheet where the time stmape will go; i.e. Control Sheet */
-//   arrayBreak,         /** funciton expression that gets at the correct JSON level */
-//   rawAPIPull){        /** funciton expression that assempbles the correct url and hits the API */
-
-//   let rawApiResponse = rawAPIPull (walletAddress,networkName, sProtocal);// function expression - hit the api and get raw JSON repsonse
-//   let parsedJson = parseTheAPI(rawApiResponse); /** in Genearl Functions file *  parse the JSON response */
-//   console.log(parsedJson)
-//   let neededArrayRaw = arrayBreak(parsedJson,walletAddress) /** function expression from arguments */
-
-//   let final2DArray = processArrayIntoPairs(neededArrayRaw, sNameingKey); /** renames keys, check for debt, process into pairs */
- 
-//   placeFinalArryInSheet(final2DArray, sTargetSheetName, walletAddress, networkName)//place the array onto the sheet
-//   timeStamp(stampSheet,stampRow,stampColumn,1,1) // general functions
-// }; /** end runDataPUll */
