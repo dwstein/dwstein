@@ -48,14 +48,16 @@ function cleanAaveAPIData(_rawAPIResponse) {
    var aCleanData = [];  // declare an array to be used for final storage
   /** loop through aContractData, pull data out of the objects using aFullHeaderList array */
   for (var n = 0; n <= aContractData.length - 1; n++) {    
-
-    /** loop through the array of headers and pull out for each of the top level array */
-    for (var i = 0; i <= aFullHeaderList.length - 1; i++){
-        /** grab the correct headers in the object by using an arry to keep them in order */
-        /** the last two object levles are aFullHeaderList items 0 and 1 */
-        // console.log(aContractData[n][aFullHeaderList[i][0]][aFullHeaderList[i][1]])
-        aCleanData.push(aContractData[n][aFullHeaderList[i][0]][aFullHeaderList[i][1]])
-    };
+      var aTempSubArray =[]     
+    
+          /** loop through the array of headers and pull out for each of the top level array */
+          for (var i = 0; i <= aFullHeaderList.length - 1; i++){
+              /** grab the correct headers in the object by using an arry to keep them in order */
+              /** the last two object levles are aFullHeaderList items 0 and 1 */
+              // console.log(aContractData[n][aFullHeaderList[i][0]][aFullHeaderList[i][1]])
+              aTempSubArray.push(aContractData[n][aFullHeaderList[i][0]][aFullHeaderList[i][1]])
+          };
+      aCleanData[n] = aTempSubArray
   };
   return aCleanData      
 };
@@ -68,14 +70,11 @@ function aaveAPIControler() {
   var downloadSheet = ss.getSheetByName(sheetName);
   //clearSheet(downloadSheet);
   var finalURL = aaveURL();
-  var response = getRawData(finalURL);  // getRawData is in General_Functions
+  var response = getRawData(finalURL);            // getRawData is in General_Functions
   var cleanedAPIData = cleanAaveAPIData(response);
-  console.log(cleanedAPIData);
-  console.log("need to set up the sheet where this lands, add time stamp, and test");
-  console.log("the challenge is to either track in sperate sheets, or in a database");
-  exit();
-
-  var finalArray = addTimeStamp(cleanedAPIData);
-  placeAPIData(cleanedAPIData, sheetName);
+  var finalArray = addTimeStamp(cleanedAPIData);  // general functions
+  console.log(finalArray);
+  placePolygonAPIData(finalArray, sheetName);     // general functions
+  console.log("done wiht aave download")
 };
 
