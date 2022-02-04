@@ -1,4 +1,4 @@
-/** code for pulling in the info pologoin balances via covalent api */
+/** code for pulling in the info "Raw Ponlygon Tracking" via covalent api */
 
 /** working exmaple
  * api.covalenthq.com/v1/137/address/0x4d5aF4843eaCF5C5318E6913f04251b937dbF034/balances_v2/?key=ckey_22e6256ba15d4d6d8a42df77447
@@ -64,13 +64,13 @@ function getFinnalPolygonURL() {
 };
 
 /** get the raw data from the api */
-function getRawData(_URL) {
-  var response = UrlFetchApp.fetch(_URL)
-  return response
-};
+// function getRawData(_URL) {
+//   var response = UrlFetchApp.fetch(_URL)
+//   return response
+// };
 
-/** clean API Data */
-function cleanAPIData(
+/** clean API Data cleanPolygonAPIData*/
+function cleanPolygonAPIData(
   _rawAPIResponse,      // raw api response that needs to be parsed
   _aColumnHeaderList,   // the keys for the final arrays needed for placement in the sheet
   _levelOne,            // first key in object
@@ -92,25 +92,25 @@ function cleanAPIData(
   return aCleanData       // 2D array
 }
 
-/** add a a timestamp too the front of each sub array */
-function addTimeStamp(_aCleanedData) {
-  const timeElapsed = Date.now();         // same timestamp for all the data so it's easier to track as a group
-  const today = new Date(timeElapsed);
-  const todayFormated = today.toUTCString();
+// /** add a a timestamp too the front of each sub array */
+// function addTimeStamp(_aCleanedData) {
+//   const timeElapsed = Date.now();         // same timestamp for all the data so it's easier to track as a group
+//   const today = new Date(timeElapsed);
+//   const todayFormated = today.toUTCString();
 
-  for (var n = _aCleanedData.length - 1; n >= 0; n--) {
-    _aCleanedData[n].unshift(todayFormated);
-  }
-  return _aCleanedData
-}
+//   for (var n = _aCleanedData.length - 1; n >= 0; n--) {
+//     _aCleanedData[n].unshift(todayFormated);
+//   }
+//   return _aCleanedData
+// }
 
-/** place the cleanred API data inot the raw download sheet */
-function placeAPIData(_cleanredAPIData, _sheetName) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var downloadSheet = ss.getSheetByName(_sheetName);
-  var downloadRange = downloadSheet.getRange(2, 1, _cleanredAPIData.length, _cleanredAPIData[0].length)
-  downloadRange.setValues(_cleanredAPIData);
-}
+// /** place the cleaned API data into the raw polygon download sheet: placePolygonAPIData*/
+// function placeAPIData(_cleanedAPIData, _sheetName) {
+//   var ss = SpreadsheetApp.getActiveSpreadsheet();
+//   var downloadSheet = ss.getSheetByName(_sheetName);
+//   var downloadRange = downloadSheet.getRange(2, 1, _cleanedAPIData.length, _cleanedAPIData[0].length)
+//   downloadRange.setValues(_cleanedAPIData);
+// }
 
 /** API Controller Funciton */
 /** runs through the other functions in the script polygonAPIControler*/
@@ -120,7 +120,7 @@ function polygonAPIControler() {
   var downloadSheet = ss.getSheetByName(sheetName);
   clearSheet(downloadSheet);
   var finalURL = getFinnalPolygonURL();
-  var response = getRawData(finalURL);
+  var response = getRawData(finalURL);  // getRawData is in General_Functions
   var aColumnHeaderList = [
     "contract_address",
     "contract_ticker_symbol",
@@ -130,9 +130,9 @@ function polygonAPIControler() {
     "contract_decimals",
     "contract_name",
     "last_transferred_at"];
-  var cleanedAPIData = cleanAPIData(response, aColumnHeaderList, "data", "items");
+  var cleanedAPIData = cleanPolygonAPIData(response, aColumnHeaderList, "data", "items");
   var finalArray = addTimeStamp(cleanedAPIData);
-  placeAPIData(cleanedAPIData, sheetName);
+  placeAPIData(cleanedAPIData, sheetName);  // in genearal functions
 };
 
 /** runs Covalent_API.gs */
