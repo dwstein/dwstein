@@ -5,7 +5,7 @@
 /** 
  * purpose of this script:
  * Go through the most recent balance pull from the API
- * Put the latest data inot the balances sheet
+ * Put the latest data into the balances sheet
 */
 
 /** Conventions
@@ -42,11 +42,24 @@
 /** F] controller() - controler function - called by main - runs the funcitons in order */
 function copyController(){
   /** GENERAL VARIABLES */
+      
+
       /** sheet names */
         let ss = SpreadsheetApp.getActiveSpreadsheet();           // get active spredsheet
         let sourceSheetName = "Raw Polygon Pull";
         let approvedContractsSheetName = "Polygon Contracts"
         let targetSheetName = "Balance Tracking";
+        let inputsSheetName = "Inputs";
+
+      /** Airtabel Variables */
+        let inputsSheet = ss.getSheetByName(inputsSheetName);
+        let myAPIKey = inputsSheet.getRange(9,2).getValue();
+        const cAirtableAPIEndpoint = "https://api.airtable.com/v0/"
+        const tableName = "Balance Tracking";
+        let baseKey = inputsSheet.getRange(10,2).getValue();
+        // paylod is composed below
+       
+
       
       /** source sheet info. sheet = "Raw Polygon Pull" -  where the raw data from the api lands */
         let sourceSheet = ss.getSheetByName(sourceSheetName);     // the source of the latest balance pull
@@ -59,7 +72,7 @@ function copyController(){
 
       /** Full Download variables */
         let fullDownloadStartColumn = 1
-        let fullDownloadColumnsRange = 5;     // column range from A - netted out against start column
+        let fullDownloadColumnsRange = 7;     //  moved to 7 to get the decimals
 
       /**   Approved contracts variables from "Polygon Contrats" sheet
         sheet with the list of approved contracts.  Determine what token balances are tracked. */
@@ -93,7 +106,8 @@ function copyController(){
           sourceLastRow, 
           sourceColumnsRange);
   
-    /** B]1) create an array of all the contracts (polyong contracts sheet) aAll_Polygon_Contracts  */
+  
+    /** B]1) create an array of all the contracts (polygon contracts sheet) aAll_Polygon_Contracts  */
       var aAll_Polygon_Contracts = turnRangeIntoArray(
         approvedContractsSheet, 
         approvedContractsStartRow, 
@@ -112,6 +126,7 @@ function copyController(){
             need to filter for contracts with for second item (1 or 0),
             then map each sub array to get just the first elememtn */
       var aFiltered_Polygon_Contracts = aAll_Polygon_Contracts.filter(contracts => contracts[1]===1).map(c => c[0]);  
+
 
     /** C] create array of intersection of recent download contracts and approved contracts: aConfirmed_Contracts */
           /** filters one array with another
@@ -134,19 +149,65 @@ function copyController(){
           var aGood_Gross_Contract_Data = aGross_Recent_Pull.filter(c => aConfirmed_Contracts.includes(c[1])); // contracts are the second item
 
 
+          /** turning the balances into numbers that we can use; i.e. divide the balances by the decimals */
+          /** Dividing the balance (which is a very large integer) by 10 rased to the decimals */
+          function divideByDecimal(){
+            z = 0;
+              for (var n = aGood_Gross_Contract_Data.length - 1; n >= 0; n--){
+                z = Number(aGood_Gross_Contract_Data[n][3]) / (10**Number(aGood_Gross_Contract_Data[n][6]));
+                aGood_Gross_Contract_Data[n][3] = z;
+              }
+            return aGood_Gross_Contract_Data
+          };
+          var aGood_Gross_Contract_Data = divideByDecimal(aGood_Gross_Contract_Data);
+
+
     /** D]3) filter aGood_Gross_Contract_Data array into just contracts and their balances: aGood_Net_Contract_Data */
         /** SO info here: https://stackoverflow.com/questions/9425009/remove-multiple-elements-from-array-in-javascript-jquery */
-
-          var aRemoveValFromIndex = [0,2,4]; // the elemnts of the sub arrays that I want to remove
+        /** removing data based on "Raw Polygon Pull" sheet */
+          var aRemoveValFromIndex = [0, 2, 4, 5, 6]; // the elemnts of the sub arrays removed to leave contract and balance
           var aGood_Net_Contract_Data = []; 
-          for (var z = aGood_Gross_Contract_Data.length - 1; z >= 0; z--){  // cleans sub arrays to get just the contracts and balances
+          for (var z = aGood_Gross_Contract_Data.length - 1; z >= 0; z--){  // loop through the entire 2D array
               var aIndividualContract = [];
-              var aIndividualContract = aGood_Gross_Contract_Data[z];         
-              for (var n = aRemoveValFromIndex.length -1; n>=0; n--) {
+              var aIndividualContract = aGood_Gross_Contract_Data[z];      
+              for (var n = aRemoveValFromIndex.length -1; n>=0; n--) {      // loop thorugh the sub array and remove unwanted data
                   aIndividualContract.splice(aRemoveValFromIndex[n],1);
               };
-               aGood_Net_Contract_Data[z] = aIndividualContract;            // array of cleaned contracts and their balances
+               aGood_Net_Contract_Data[z] = aIndividualContract;         // array of cleaned contracts and their balances
           };
+
+    /** AIRTABLE POST */
+
+            /** create an object of contracts and balances for posting to airtable  */
+            let oNetContracts = arr2obj(aGood_Gross_Contract_Data);
+
+            /** initialize payload data with a bit of test data.  Overwritten later */
+            var payload = {
+                "records": [
+                      {
+                        "fields": {
+                          "Contract Address": "test",
+                            "0x8df3aad3a84da6b69a4da8aec3ea40d9091b2ac4": "6665"
+                        }
+                      }
+                ]
+            }
+            /** adds the TimeStamp for the data */
+            oNetContracts["TimeStamp"] = sourceTimeStamp;
+
+            /** overwrite the "fields" value with the object containing the latest contract and balances */
+            payload.records[0].fields = oNetContracts;
+
+            /** Post the contracts and balances to Airtable via API: in General Functions */
+            atPostTable(
+                baseKey,             // the key for the airtable base; provided by Airtable
+                tableName,           // text name of the table; ex. "Balance Tracking"
+                payload,             // an object that has the data to be sent to airtable
+                myAPIKey,            // api key from airtable
+                cAirtableAPIEndpoint // api endpoint form airtable
+                );
+
+
 
     /** E]1)a) grab array of current target headers (contracts): aTarget_Contracts */
         var aTarget_Contracts = turnRangeIntoArray(
@@ -215,6 +276,7 @@ function copyController(){
       aTwoDFinal_Balances_Ordered[0] = aFinal_Balances_Ordered;
       finalBalanceRange.setValues(aTwoDFinal_Balances_Ordered);
 
+
 console.log("end fController");
 };
 
@@ -238,4 +300,25 @@ function turnRangeIntoArray(
 function runCopyMain() {
      copyController()
 }
+
+/** for testing the post */
+// function testPayload(){
+
+//   const payload = {
+//         "records": [
+
+//               {
+//               "fields": {
+//                   "Contract Address": "testpm",
+//                   "0x8df3aad3a84da6b69a4da8aec3ea40d9091b2ac4": "166699"
+//               }
+//               }
+//         ]
+//       };
+
+//   return payload
+// }
+
+
+
 
