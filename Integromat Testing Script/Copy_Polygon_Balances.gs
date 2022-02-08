@@ -4,7 +4,7 @@
 
 /** 
  * purpose of this script:
- * Go through the most recent balance pull from the API
+ * Go through the most recent balance pull from the Polygon API
  * Put the latest data into the balances sheet
 */
 
@@ -40,7 +40,8 @@
 
 
 /** F] controller() - controler function - called by main - runs the funcitons in order */
-function copyController(){
+/** copies data form Raw Polygon Pull to Balance Tracking: copyPolygonController*/
+function copyPolygonController(){
   /** GENERAL VARIABLES */
       
 
@@ -105,6 +106,8 @@ function copyController(){
           sourceStartColumn, 
           sourceLastRow, 
           sourceColumnsRange);
+      
+      
   
   
     /** B]1) create an array of all the contracts (polygon contracts sheet) aAll_Polygon_Contracts  */
@@ -297,8 +300,8 @@ function turnRangeIntoArray(
 /** 
  * kicks off the script
  */
-function runCopyMain() {
-     copyController()
+function runPolygonMain() {
+     copyPolygonController()
 }
 
 /** for testing the post */
