@@ -132,12 +132,14 @@ function polygonAPIControler() {
     "last_transferred_at"];
   var cleanedAPIData = cleanPolygonAPIData(response, aColumnHeaderList, "data", "items");
   var finalArray = addTimeStamp(cleanedAPIData);
-  placeAPIData(cleanedAPIData, sheetName);  // in genearal functions
+  // placeAPIData(cleanedAPIData, sheetName);  // in genearal functions
+  placeAPIDataLastRow(cleanedAPIData, sheetName);
+  console.info("Raw records placed in Raw Polygon Pull: " + cleanedAPIData.length);
 };
 
-/** runs Covalent_API.gs */
-function runCovalent_API() {
+/** runs Polygon_Covalent_API.gs */
+function runPolygonCovalent_API() {
   polygonAPIControler()
-  console.log("runCovalent_API script over")
+  console.log("runPolygonCovalent_API script over")
 }
 
