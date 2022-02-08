@@ -36,12 +36,12 @@ function fAaveHeaders(){
     return headerlist
 }
 
-/** clean API Data cleanAaveAPIData*/
+/** clean the API Data cleanAaveAPIData*/
 function cleanAaveAPIData(_rawAPIResponse) {           
   var theParsedJSONdata = JSON.parse(_rawAPIResponse)
   /**  returns an array that needs loops to get the data */
   /**  the more positions there are, the longer this array (aContractData) will get */
-  var aContractData = theParsedJSONdata["data"]["aave"]["balances"];    
+  var aContractData = theParsedJSONdata["data"]["aave"]["balances"];
   var aFullHeaderList = fAaveHeaders(); // a funtion that has all the headers stored in arrays
 
   // var firstBalance = aContractData[0]["balance"]["atoken_contract_ticker_symbol"];  // example of what data pull would look like
@@ -62,19 +62,52 @@ function cleanAaveAPIData(_rawAPIResponse) {
   return aCleanData      
 };
 
+/** AIRTABLE POST */
+  /** funciton that handles post to airtable */
+  function postAaveToAirtable (_aFinalArrray){ // a 2D array of the values, but no keys
+      /** create an object of contracts and balances for posting to airtable  */
+
+      var aPayload = [];
+      var aColumnHeaders = fAaveHeaders();  // these will be the keys in the payload object
+      aColumnHeaders.unshift("TimeStamp");
+      /** parent loop is the filted data, one loop for each token */
+      for (var z = 0; z <= _aFinalArrray.length - 1; z++){
+          var oSubPayload = {}
+          /** child loop is for the headers. go throug the headers and marry the key:value  */
+          for (var n = 0; n <= aColumnHeaders.length - 1; n++){
+              // console.log(aColumnHeaders[n] + " and " + _aFinalArrray[z][n]);
+              oSubPayload[aColumnHeaders[n]] = _aFinalArrray[z][n];
+          };
+          // console.log("z is: " + z);
+          aPayload[z] = oSubPayload;  // load the parent array with the child object
+          // console.log(aPayload[z]);
+      };
+
+      /** need to load the payload to the POST function */
+      /** need to loop through the paylod array and post 3 seperate times */
+
+      console.log(aPayload);
+  };
+  
+
+
 
 /** controlls the aave specific API call */
+/** pulls data form aave api and puts data into AAVE Downlaod sheet */
 function aaveAPIControler() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetName = "AAVE Download"
   var downloadSheet = ss.getSheetByName(sheetName);
   //clearSheet(downloadSheet);
-  var finalURL = aaveURL();
+  var finalURL = aaveURL();                       //  aaveURL() assembles the URL
   var response = getRawData(finalURL);            // getRawData is in General_Functions
   var cleanedAPIData = cleanAaveAPIData(response);
   var finalArray = addTimeStamp(cleanedAPIData);  // general functions
-  console.log(finalArray);
-  placePolygonAPIData(finalArray, sheetName);     // general functions
-  console.log("done wiht aave download")
+//   postAaveToAirtable(finalArray)
+// exit();
+//   console.log(finalArray);
+  // placeAPIData(finalArray, sheetName);     // general functions
+  placeAPIDataLastRow(finalArray, sheetName);
+  console.log("done with aave download")
 };
 
