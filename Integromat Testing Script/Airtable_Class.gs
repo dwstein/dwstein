@@ -39,10 +39,4 @@ class DataForPost {
 
 
 
-function runAirtable_class(){
-  let testy = new DataForPost("Inputs", "AAVE Download");
-  console.log(testy.atPostTable({"TimeStamp" : "no fcking way"}));
-  }
-
-
 
