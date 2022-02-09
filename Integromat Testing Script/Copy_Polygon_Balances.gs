@@ -200,6 +200,7 @@ function copyPolygonController(){
 
             /** overwrite the "fields" value with the object containing the latest contract and balances */
             payload.records[0].fields = oNetContracts;
+         
 
             /** Post the contracts and balances to Airtable via API: in General Functions */
             atPostTable(
