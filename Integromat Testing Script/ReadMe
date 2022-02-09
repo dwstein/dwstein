@@ -1,0 +1,10 @@
+/**
+ * Next steps:
+ * 1 - change the polygon balance tracking script to take the data, as provided
+ *      by the api; i.e. large numbers need to stay as text and be stored as text in Airtable
+ *      becuase javascript converts large number into scientific notation
+ * 1)a) - change the column data settings in airtable to accept text
+ * 1)b) - add columns in airtable that convert the next to numbers for both Balance Tracking and AAVE Download
+ * 2 - create a verion without the airtable connection that saro can use
+ * 3 - create a class for API get calls (maybe one that can do GET or POST)
+ */
