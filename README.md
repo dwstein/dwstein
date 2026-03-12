@@ -1,6 +1,6 @@
 - 👋 Hi, I’m @dwstein
-- I'm the COO of Tracer Imaging, and I do a lot of coding with Google Sheets and Airtable.
-- I built and sold HomeKeepr on the business side.  I'm now interested in getting a little closer to the product.
+- I'm the COO of Tracer Imaging, and I used do a lot of coding with Google Sheets and Airtable. Now I use Claude Code.
+- I built and sold HomeKeepr on the business side.  I'm now interested in the transition in the world of agents.
 - 👀 I’m interested in figuring out how to use AI to unlock value for me and for my company.
 - 🌱 I’m currently learning how to make the most of Claude Code and Claud Cowork.
 - 💞️ I’m looking to collaborate on helping businesses do more with the systems they already have.
